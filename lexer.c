@@ -27,7 +27,7 @@ static char nextc()
 {
     char c = lex_process->function->next_char(lex_process);
 
-    if(lex_is_in_expression())
+    if (lex_is_in_expression())
     {
         buffer_write(lex_process->parentheses_buffer, c);
     }
@@ -63,7 +63,7 @@ struct token *token_create(struct token *_token)
 {
     memcpy(&tmp_token, _token, sizeof(struct token));
     tmp_token.pos = lex_file_position();
-    if(lex_is_in_expression())
+    if (lex_is_in_expression())
     {
         tmp_token.between_brackets = buffer_ptr(lex_process->parentheses_buffer);
     }
@@ -104,9 +104,30 @@ unsigned long long read_number()
     return atoll(s);
 }
 
+int lexer_number_type(char c)
+{
+    c = tolower(c);
+    int res = NUMBER_TYPE_NORMAL;
+    if (c == 'l')
+    {
+        res = NUMBER_TYPE_LONG;
+    }
+    else if (c == 'f')
+    {
+        res = NUMBER_TYPE_FLOAT;
+    }
+
+    return res;
+}
+
 struct token *token_make_number_for_value(unsigned long number)
 {
-    return token_create(&(struct token){.type = TOKEN_TYPE_NUMBER, .llnum = number});
+    int number_type = lexer_number_type(peekc());
+    if (number_type != NUMBER_TYPE_NORMAL)
+    {
+        nextc();
+    }
+    return token_create(&(struct token){.type = TOKEN_TYPE_NUMBER, .llnum = number, .num.type = number_type});
 }
 
 static struct token *token_make_number()
@@ -659,20 +680,19 @@ void lexer_string_buffer_push_char(struct lex_process *process, char c)
 struct lex_process_functions lexer_string_buffer_functions = {
     .next_char = lexer_string_buffer_next_char,
     .peek_char = lexer_string_buffer_peek_char,
-    .push_char = lexer_string_buffer_push_char
-};
+    .push_char = lexer_string_buffer_push_char};
 
 struct lex_process *tokens_build_for_string(struct compile_process *compiler, const char *str)
 {
     struct buffer *buffer = buffer_create();
     buffer_printf(buffer, str);
     struct lex_process *lex_process = lex_process_create(compiler, &lexer_string_buffer_functions, buffer);
-    if(!lex_process)
+    if (!lex_process)
     {
         return NULL;
     }
 
-    if(lex(lex_process) != LEXICAL_ANALYSIS_ALL_OK)
+    if (lex(lex_process) != LEXICAL_ANALYSIS_ALL_OK)
     {
         return NULL;
     }
