@@ -47,6 +47,16 @@ struct pos
     case '.':                            \
     case '?'
 
+#define SYMBLE_CASE \
+    case '{':       \
+    case '}':       \
+    case ':':       \
+    case ';':       \
+    case '#':       \
+    case '\\':      \
+    case ')':       \
+    case ']'
+
 enum
 {
     LEXICAL_ANALYSIS_ALL_OK,
