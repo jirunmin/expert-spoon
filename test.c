@@ -1,12 +1,9 @@
-int 
-long 
-fkjsfsjdsd asla 
-dsd131dms dk_djak 
-7djks
-7 / 2
-// hello
-char c = '\n';
-/*
-* ads
-*/
-'a'
+#include <stdio.h>
+int main()
+{
+    int a = 0x12
+    int b = 0b11
+    int x = 7
+    char c = '\n'
+    return 0
+}

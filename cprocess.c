@@ -23,6 +23,8 @@ struct compile_process *compile_process_create(const char *filename, const char 
     process->flags = flags;
     process->c_file.fp = file;
     process->ofile = out_file;
+    process->pos.line = 1;
+    process->pos.col = 1;
     return process;
 }
 
