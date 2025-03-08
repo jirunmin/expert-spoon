@@ -31,7 +31,6 @@ struct pos
     case '+':                            \
     case '-':                            \
     case '*':                            \
-    case '/':                            \
     case '>':                            \
     case '<':                            \
     case '^':                            \
