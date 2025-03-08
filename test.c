@@ -5,7 +5,8 @@ dsd131dms dk_djak
 7djks
 7 / 2
 // hello
-
+char c = '\n';
 /*
 * ads
 */
+'a'
