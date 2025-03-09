@@ -28,7 +28,6 @@ void compiler_warning(struct compile_process *compiler, const char *msg, ...)
     fprintf(stderr, " on line %i, col %i in file %s\n", compiler->pos.line, compiler->pos.col, compiler->pos.filename);
 }
 
-
 int compile_file(const char *filename, const char *out_filename, int flags)
 {
     struct compile_process *process = compile_process_create(filename, out_filename, flags);
@@ -50,6 +49,11 @@ int compile_file(const char *filename, const char *out_filename, int flags)
     process->token_vec = lex_process->token_vec;
 
     // Perform parsing
+
+    if (parse(process) != PARSE_ALL_OK)
+    {
+        return COMPILER_FAILED_WITH_ERRORS;
+    }
 
     // Perform code generation...
 

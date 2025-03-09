@@ -1,1 +1,4 @@
-int x = 12L;
+int main()
+{
+    int x = 50;
+}
