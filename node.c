@@ -23,7 +23,7 @@ struct node *node_peek_or_null()
 
 struct node *node_peek()
 {
-    return *(struct node**)(vector_back(node_vector));
+    return *(struct node **)(vector_back(node_vector));
 }
 
 struct node *node_pop()
@@ -33,10 +33,19 @@ struct node *node_pop()
 
     vector_pop(node_vector);
 
-    if(last_node == last_node_root)
+    if (last_node == last_node_root)
     {
         vector_pop(node_vector_root);
     }
 
     return last_node;
+}
+
+struct node *node_create(struct node *_node)
+{
+    struct node *node = malloc(sizeof(struct node));
+    memcpy(node, _node, sizeof(struct node));
+    #warning "We should set the binded owner and binded function here"
+    node_push(node);
+    return node;
 }
