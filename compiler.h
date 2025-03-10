@@ -234,7 +234,7 @@ struct node
             const char *op;
         } exp;
     };
-    
+
     union
     {
         char cval;
@@ -243,6 +243,73 @@ struct node
         unsigned long lnum;
         unsigned long long llnum;
     };
+};
+
+enum
+{
+    DATATYPE_FLAG_IS_SIGNED = 0b00000001,
+    DATATYPE_FLAG_IS_STATIC = 0b00000010,
+    DATATYPE_FLAG_IS_CONST = 0b00000100,
+    DATATYPE_FLAG_IS_POINTER = 0b00001000,
+    DATATYPE_FLAG_IS_ARRAY = 0b00010000,
+    DATATYPE_FLAG_IS_EXTERN = 0b00100000,
+    DATATYPE_FLAG_IS_RESTRICT = 0b01000000,
+    DATATYPE_FLAG_IGNORE_TYPE_CHECKING = 0b10000000,
+    DATATYPE_FLAG_IS_SECONDARY = 0b100000000,
+    DATATYPE_FLAG_STRUCT_UNION_NO_NAME = 0b1000000000,
+    DATATYPE_FLAG_IS_LITERAL = 0b10000000000
+};
+
+enum
+{
+    DATA_TYPE_VOID,
+    DATA_TYPE_CHAR,
+    DATA_TYPE_SHORT,
+    DATA_TYPE_INTEGER,
+    DATA_TYPE_LONG,
+    DATA_TYPE_FLOAT,
+    DATA_TYPE_DOUBLE,
+    DATA_TYPE_STRUCT,
+    DATA_TYPE_UNION,
+    DATA_TYPE_UNKNOWN
+};
+
+struct datatype
+{
+    int flags;
+    // i.e type of long, int, float ect...
+    int type;
+
+    // i.e long int. int being the secondary.
+    struct datatype *secondary;
+    // "long"
+    const char *type_str;
+    // The sizeof the datatype.
+    size_t size;
+    // int ***a -> 3
+    int pointer_depth;
+
+    union
+    {
+        struct node *struct_node;
+        struct node *union_node;
+    };
+};
+
+enum
+{
+    DATA_TYPE_EXPECT_PRIMITIVE,
+    DATA_TYPE_EXPECT_UNION,
+    DATA_TYPE_EXPECT_STRUCT
+};
+
+enum
+{
+    DATA_SIZE_ZERO = 0,
+    DATA_SIZE_BYTE = 1,
+    DATA_SIZE_WORD = 2,
+    DATA_SIZE_DWORD = 4,
+    DATA_SIZE_DDWORD = 8
 };
 
 int compile_file(const char *filename, const char *out_filename, int flags);
@@ -270,6 +337,10 @@ struct lex_process *tokens_build_for_string(struct compile_process *compiler, co
 bool token_is_keyword(struct token *token, const char *value);
 bool token_is_symbol(struct token *token, char c);
 bool token_is_nl_or_comment_or_newline_seperator(struct token *token);
+bool token_is_primitive_keyword(struct token *token);
+bool token_is_operator(struct token *token, const char *val);
+bool keyword_is_datatype(const char *str);
+bool datatype_is_struct_or_union_for_name(const char *name);
 
 struct node *node_create(struct node *_node);
 void make_exp_node(struct node *left_node, struct node *right_node, const char *op);
@@ -282,7 +353,6 @@ void node_set_vector(struct vector *vec, struct vector *root_vec);
 
 struct node *node_peek_expressionable_or_null();
 bool node_is_expressionable(struct node *node);
-
 
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_OPERATORS_IN_GROUP 12
