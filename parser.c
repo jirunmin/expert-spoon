@@ -248,7 +248,7 @@ void parse_datatype_modifiers(struct datatype *dtype)
         }
         else if (S_EQ(token->sval, "unsigned"))
         {
-            dtype->flags &= -DATATYPE_FLAG_IS_SIGNED;
+            dtype->flags &= ~DATATYPE_FLAG_IS_SIGNED;
         }
         else if (S_EQ(token->sval, "static"))
         {
@@ -530,6 +530,13 @@ void parse_expressionable(struct history *history)
     }
 }
 
+void parse_keyword_for_global()
+{
+    parse_keyword(history_begin(0));
+    struct node *node = node_pop();
+
+}
+
 int parse_next()
 {
     struct token *token = token_peek_next();
@@ -546,6 +553,10 @@ int parse_next()
     case TOKEN_TYPE_STRING:
         // parse_single_token_to_node();
         parse_expressionable(history_begin(0));
+        break;
+
+    case TOKEN_TYPE_KEYWORD:
+        parse_keyword_for_global();
         break;
     }
     return 0;
