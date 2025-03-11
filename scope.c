@@ -61,7 +61,6 @@ void scope_iteration_start(struct scope *scope)
 
 void scope_iteration_end(struct scope *scope)
 {
-
 }
 
 void *scope_iteration_back(struct scope *scope)
@@ -76,7 +75,7 @@ void *scope_last_entity_at_scope(struct scope *scope)
 {
     if (vector_count(scope->entities) == 0)
         return NULL;
-    
+
     return vector_back_ptr(scope->entities);
 }
 
@@ -84,7 +83,7 @@ void *scope_last_entity_from_scope_stop_at(struct scope *scope, struct scope *st
 {
     if (scope == stop_scope)
         return NULL;
-    
+
     void *last = scope_last_entity_at_scope(scope);
     if (last)
     {
