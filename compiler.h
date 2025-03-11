@@ -251,6 +251,12 @@ enum
 
 };
 
+struct array_brackets
+{
+    // vector of struct node*
+    struct vector *n_brackets;
+};
+
 struct node;
 struct datatype
 {
@@ -272,6 +278,15 @@ struct datatype
         struct node *struct_node;
         struct node *union_node;
     };
+
+    struct array
+    {
+        struct array_brackets *brackets;
+        /**
+         * The total array size: Equation = DATATYPE_SIZE * EACH_INDEX
+         */
+        size_t size;
+    } array;
 };
 
 struct node
@@ -305,6 +320,18 @@ struct node
             const char *name;
             struct node *val;
         } var;
+
+        struct varlist
+        {
+            // A list of struct node *variables.
+            struct vector *list;
+        } var_list;
+
+        struct brackets
+        {
+            // int x[50]. [50] would be cour bracket node. The inner would NODE_TYPE_NUMBER value of 50.
+            struct node *inner;
+        } brackets;
     };
 
     union
@@ -394,6 +421,7 @@ bool datatype_is_struct_or_union_for_name(const char *name);
 
 struct node *node_create(struct node *_node);
 void make_exp_node(struct node *left_node, struct node *right_node, const char *op);
+void make_bracket_node(struct node *node);
 
 struct node *node_pop();
 struct node *node_peek();
@@ -403,6 +431,14 @@ void node_set_vector(struct vector *vec, struct vector *root_vec);
 
 struct node *node_peek_expressionable_or_null();
 bool node_is_expressionable(struct node *node);
+
+struct array_brackets *array_brackets_new();
+void array_brackets_free(struct array_brackets *brackets);
+void array_brackets_add(struct array_brackets *brackets, struct node *bracket_node);
+struct vector *array_brackets_node_vector(struct array_brackets *brackets);
+size_t array_brackets_calculate_size_from_index(struct datatype *dtype, struct array_brackets *brackets, int index);
+size_t array_brackets_calculate(struct datatype *dtype, struct array_brackets *brackets);
+int array_total_indexes(struct datatype *dtype);
 
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_OPERATORS_IN_GROUP 12
