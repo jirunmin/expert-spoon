@@ -327,11 +327,11 @@ struct node
             struct vector *list;
         } var_list;
 
-        struct brackets
+        struct bracket
         {
             // int x[50]. [50] would be cour bracket node. The inner would NODE_TYPE_NUMBER value of 50.
             struct node *inner;
-        } brackets;
+        } bracket;
     };
 
     union

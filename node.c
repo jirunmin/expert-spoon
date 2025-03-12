@@ -69,7 +69,7 @@ void make_exp_node(struct node *left_node, struct node *right_node, const char *
 
 void make_bracket_node(struct node *node)
 {
-    node_create(&(struct node){.type = NODE_TYPE_BRACKET, .brackets.inner = node});
+    node_create(&(struct node){.type = NODE_TYPE_BRACKET, .bracket.inner = node});
 }
 
 struct node *node_create(struct node *_node)
