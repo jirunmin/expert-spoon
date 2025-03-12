@@ -317,6 +317,7 @@ struct node
         struct var
         {
             struct datatype type;
+            int padding;
             const char *name;
             struct node *val;
         } var;
@@ -484,6 +485,11 @@ int array_total_indexes(struct datatype *dtype);
 size_t variable_size(struct node *var_node);
 // Sums the variable size of all variable nodes inside the variable list node Returns the result
 size_t variable_size_for_list(struct node *var_list_node);
+
+int padding(int val, int to);
+int align_value(int val, int to);
+int align_value_treat_positive(int val, int to);
+int compute_sum_padding(struct vector *vec);
 
 struct scope *scope_create_root(struct compile_process *process);
 void scope_free_root(struct compile_process *process);
