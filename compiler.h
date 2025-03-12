@@ -348,6 +348,23 @@ struct node
              */
             struct node *var;
         } _struct;
+
+        struct body
+        {
+            /**
+             * struct node* vector of statements
+             */
+            struct vector *statements;
+
+            // The size of combined variables inside this body.
+            size_t size;
+
+            // True if the variable size had to be increased due to padding in the body.
+            bool padded;
+
+            // A pointer to the largest variable node in the statements vector.
+            struct node *largest_var_node;
+        } body;
     };
 
     union
@@ -433,12 +450,18 @@ bool token_is_nl_or_comment_or_newline_seperator(struct token *token);
 bool token_is_primitive_keyword(struct token *token);
 bool token_is_operator(struct token *token, const char *val);
 bool keyword_is_datatype(const char *str);
+
 bool datatype_is_struct_or_union_for_name(const char *name);
 bool datatype_is_struct_or_union(struct datatype *dtype);
+size_t datatype_size_for_array_access(struct datatype *dtype);
+size_t datatype_element_size(struct datatype *dtype);
+size_t datatype_size_no_ptr(struct datatype *dtype);
+size_t datatype_size(struct datatype *dtype);
 
 struct node *node_create(struct node *_node);
 void make_exp_node(struct node *left_node, struct node *right_node, const char *op);
 void make_bracket_node(struct node *node);
+void make_body_node(struct vector *body_vec, size_t size, bool padded, struct node *largest_var_node);
 
 struct node *node_pop();
 struct node *node_peek();
@@ -456,6 +479,11 @@ struct vector *array_brackets_node_vector(struct array_brackets *brackets);
 size_t array_brackets_calculate_size_from_index(struct datatype *dtype, struct array_brackets *brackets, int index);
 size_t array_brackets_calculate(struct datatype *dtype, struct array_brackets *brackets);
 int array_total_indexes(struct datatype *dtype);
+
+// Gets the variable size from the given variable node
+size_t variable_size(struct node *var_node);
+// Sums the variable size of all variable nodes inside the variable list node Returns the result
+size_t variable_size_for_list(struct node *var_list_node);
 
 struct scope *scope_create_root(struct compile_process *process);
 void scope_free_root(struct compile_process *process);
