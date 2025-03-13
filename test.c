@@ -1,3 +1,1 @@
-struct abc
-{
-};
+int x = 50;
