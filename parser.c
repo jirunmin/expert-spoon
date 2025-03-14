@@ -490,6 +490,20 @@ void parser_datatype_init_type_and_size_for_primitive(struct token *datatype_tok
     parser_datatype_adjust_size_for_secondary(datatype_out, datatype_secondary_token);
 }
 
+size_t size_of_struct(const char *struct_name)
+{
+    struct symbol *sym = symresolver_get_symbol(current_process, struct_name);
+    if (!sym)
+    {
+        return 0;
+    }
+
+    assert(sym->type == SYMBOL_TYPE_NODE);
+    struct node *node = sym->data;
+    assert(node->type == NODE_TYPE_STRUCT);
+    return node->_struct.body_n->body.size;
+}
+
 void parser_datatype_init_type_and_size(struct token *datatype_token, struct token *datatype_secondary_token, struct datatype *datatype_out, int pointer_depth, int expected_type)
 {
     if (!parser_datatype_is_secondary_allowed(expected_type) && datatype_secondary_token)
@@ -504,8 +518,13 @@ void parser_datatype_init_type_and_size(struct token *datatype_token, struct tok
         break;
 
     case DATA_TYPE_EXPECT_STRUCT:
+        datatype_out->type = DATA_TYPE_STRUCT;
+        datatype_out->size = size_of_struct(datatype_token->sval);
+        datatype_out->struct_node = struct_node_for_name(current_process, datatype_token->sval);
+        break;
+
     case DATA_TYPE_EXPECT_UNION:
-        compiler_error(current_process, "Structure and union types are currently unsupported\n");
+        compiler_error(current_process, "Union types are currently unsupported\n");
         break;
 
     default:
@@ -671,7 +690,6 @@ void make_variable_node_and_register(struct history *history, struct datatype *d
     make_variable_node(dtype, name_token, value_node);
     struct node *var_node = node_pop();
 
-#warning "Remember to calculate scope offsets and push to the scope"
     // Calculate the scope offset
     parser_scope_offset(var_node, history);
     // Push the variable node to the scope
@@ -952,20 +970,55 @@ void parse_body(size_t *variable_size, struct history *history)
 #warning "Don't forget to adjust the function stack size"
 }
 
-void parse_struct_no_new_scope(struct datatype *dtype)
+void parse_struct_no_new_scope(struct datatype *dtype, bool is_forward_declaration)
 {
+    struct node *body_node = NULL;
+    size_t body_variable_size = 0;
+
+    if (!is_forward_declaration)
+    {
+        parse_body(&body_variable_size, history_begin(HISTORY_FLAG_INSIDE_STRUCTURE));
+        body_node = node_pop();
+    }
+
+    make_struct_node(dtype->type_str, body_node);
+    struct node *struct_node = node_pop();
+    if (body_node)
+    {
+        dtype->size = body_node->body.size;
+    }
+    dtype->struct_node = struct_node;
+
+    if (token_peek_next()->type == TOKEN_TYPE_IDENTIFIER)
+    {
+        struct token *var_name = token_next();
+        struct_node->flags |= NODE_FLAG_HAS_VARIABLE_COMBINED;
+        if (dtype->flags & DATATYPE_FLAG_STRUCT_UNION_NO_NAME)
+        {
+            dtype->type_str = var_name->sval;
+            dtype->flags &= ~DATATYPE_FLAG_STRUCT_UNION_NO_NAME;
+            struct_node->_struct.name = var_name->sval;
+        }
+
+        make_variable_node_and_register(history_begin(0), dtype, var_name, NULL);
+        struct_node->_struct.var = node_pop();
+    }
+
+    expect_sym(';');
+
+    node_push(struct_node);
 }
 
 void parse_struct(struct datatype *dtype)
 {
-    bool is_forward_decalration = !token_next_is_symbol('{');
-    if (!is_forward_decalration)
+    bool is_forward_declaration = !token_next_is_symbol('{');
+    if (!is_forward_declaration)
     {
         parser_scope_new();
     }
-    parse_struct_no_new_scope(dtype);
+    parse_struct_no_new_scope(dtype, is_forward_declaration);
 
-    if (!is_forward_decalration)
+    if (!is_forward_declaration)
     {
         parser_scope_finish();
     }
@@ -996,7 +1049,13 @@ void parse_variable_function_or_struct_union(struct history *history)
     if (datatype_is_struct_or_union(&dtype) && token_next_is_symbol('{'))
     {
         parse_struct_or_union(&dtype);
+
+        struct node *su_node = node_pop();
+        symresolver_build_for_node(current_process, su_node);
+        node_push(su_node);
+        return;
     }
+
     // Ignore integer abbrevations if neccesary i.e "long int" becoms just "long"
     parser_ignore_int(&dtype);
 
