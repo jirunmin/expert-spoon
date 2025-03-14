@@ -136,7 +136,7 @@ static void expect_sym(char c)
     struct token *next_token = token_next();
     if (!next_token || next_token->type != TOKEN_TYPE_SYMBOL || next_token->cval != c)
     {
-        compiler_error(current_process, "Expecting symbol %c however something else was provided\n", c);
+        compiler_error(current_process, "Expecting symbol %c however something else was provided", c);
     }
 }
 
@@ -989,7 +989,7 @@ void parse_struct_no_new_scope(struct datatype *dtype, bool is_forward_declarati
     }
     dtype->struct_node = struct_node;
 
-    if (token_peek_next()->type == TOKEN_TYPE_IDENTIFIER)
+    if (token_peek_next() && token_peek_next()->type == TOKEN_TYPE_IDENTIFIER)
     {
         struct token *var_name = token_next();
         struct_node->flags |= NODE_FLAG_HAS_VARIABLE_COMBINED;

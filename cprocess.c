@@ -29,6 +29,10 @@ struct compile_process *compile_process_create(const char *filename, const char 
     process->ofile = out_file;
     process->pos.line = 1;
     process->pos.col = 1;
+
+    symresolver_initialize(process);
+    symresolver_new_table(process);
+    
     return process;
 }
 
