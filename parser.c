@@ -70,6 +70,8 @@ struct history *history_down(struct history *history, int flags)
 
 int parse_expressionable_single(struct history *history);
 void parse_expressionable(struct history *history);
+void parse_body(size_t *variable_size, struct history *history);
+void parse_keyword(struct history *history);
 
 void parser_scope_new()
 {
@@ -105,9 +107,10 @@ static struct token *token_next()
 {
     struct token *next_token = vector_peek_no_increment(current_process->token_vec);
     parser_ignore_nl_or_comment(next_token);
-    if (!next_token)
-        return NULL;
-    current_process->pos = next_token->pos;
+    if (next_token)
+    {
+        current_process->pos = next_token->pos;
+    }
     parser_last_token = next_token;
     return vector_peek(current_process->token_vec);
 }
@@ -754,7 +757,6 @@ void parse_variable(struct datatype *dtype, struct token *name_token, struct his
     make_variable_node_and_register(history, dtype, name_token, value_node);
 }
 
-void parse_body(size_t *variable_size, struct history *history);
 void parse_symbol()
 {
     if (token_next_is_symbol('{'))
@@ -768,7 +770,6 @@ void parse_symbol()
     }
 }
 
-void parse_keyword(struct history *history);
 void parse_statement(struct history *history)
 {
     if (token_peek_next()->type == TOKEN_TYPE_KEYWORD)
@@ -989,7 +990,7 @@ void parse_struct_no_new_scope(struct datatype *dtype, bool is_forward_declarati
     }
     dtype->struct_node = struct_node;
 
-    if (token_peek_next() && token_peek_next()->type == TOKEN_TYPE_IDENTIFIER)
+    if (token_is_identifier(token_peek_next()))
     {
         struct token *var_name = token_next();
         struct_node->flags |= NODE_FLAG_HAS_VARIABLE_COMBINED;
