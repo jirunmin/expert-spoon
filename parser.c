@@ -736,11 +736,21 @@ void parse_variable(struct datatype *dtype, struct token *name_token, struct his
     make_variable_node_and_register(history, dtype, name_token, value_node);
 }
 
+void parse_body(size_t *variable_size, struct history *history);
 void parse_symbol()
 {
-    compiler_error(current_process, "Symbols are not yet supported\n");
+    if (token_next_is_symbol('{'))
+    {
+        size_t variable_size = 0;
+        struct history *history = history_begin(HISTORY_FLAG_IS_GLOBAL_SCOPE);
+        parse_body(&variable_size, history);
+        struct node *body_node = node_pop();
+
+        node_push(body_node);
+    }
 }
 
+void parse_keyword(struct history *history);
 void parse_statement(struct history *history)
 {
     if (token_peek_next()->type == TOKEN_TYPE_KEYWORD)
@@ -939,7 +949,7 @@ void parse_body(size_t *variable_size, struct history *history)
     parse_body_multiple_statement(variable_size, body_vec, history);
     parser_scope_finish();
 
-    # warning "Don't forget to adjust the function stack size"
+#warning "Don't forget to adjust the function stack size"
 }
 
 void parse_struct_no_new_scope(struct datatype *dtype)
@@ -1101,6 +1111,10 @@ int parse_next()
 
     case TOKEN_TYPE_KEYWORD:
         parse_keyword_for_global();
+        break;
+
+    case TOKEN_TYPE_SYMBOL:
+        parse_symbol();
         break;
     }
     return 0;
