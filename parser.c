@@ -638,8 +638,12 @@ void parser_scope_offset_for_stack(struct node *node, struct history *history)
     int offset = -variable_size(node);
     if (upward_stack)
     {
-#warning "HANDLE UPWARD STACK"
-        compiler_error(current_process, "Not yet implemented\n");
+        size_t stack_addition = function_node_argument_stack_addition(parser_current_function);
+        offset = stack_addition;
+        if (last_entity)
+        {
+            offset = datatype_size(&variable_node(last_entity->node)->var.type);
+        }
     }
 
     if (last_entity)
@@ -647,7 +651,6 @@ void parser_scope_offset_for_stack(struct node *node, struct history *history)
         offset += variable_node(last_entity->node)->var.aoffset;
         if (variable_node_is_primitive(node))
         {
-            // possible bug: offset ? -offset ?
             variable_node(node)->var.padding = padding(upward_stack ? offset : -offset, node->var.type.size);
         }
     }
@@ -1222,6 +1225,7 @@ int parse_expressionable_single(struct history *history)
 
     case TOKEN_TYPE_IDENTIFIER:
         parse_identifier(history);
+        res = 0;
         break;
 
     case TOKEN_TYPE_OPERATOR:
