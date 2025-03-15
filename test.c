@@ -14,4 +14,5 @@ int main(int argc, char **argv)
     {
         int xx = argc - 3;
     }
+    return x;
 }
