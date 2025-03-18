@@ -324,7 +324,7 @@ void parse_exp_normal(struct history *history)
 
 void parser_deal_with_additional_expression()
 {
-    if (token_peek_next()->type == TOKEN_TYPE_OPERATOR)
+    if (token_peek_next() && token_peek_next()->type == TOKEN_TYPE_OPERATOR)
     {
         parse_expressionable(history_begin(0));
     }
@@ -1312,6 +1312,96 @@ void parse_if_stmt(struct history *history)
     make_if_node(cond_node, body_node, parse_else_or_else_if(history));
 }
 
+void parse_keyword_parenthese_expression(const char *keyword)
+{
+    // while (1)
+    expect_keyword(keyword);
+    expect_op("(");
+    parse_expressionable_root(history_begin(0));
+    expect_sym(')');
+}
+
+void parse_do_while(struct history *history)
+{
+    expect_keyword("do");
+    size_t var_size = 0;
+    parse_body(&var_size, history);
+    struct node *body_node = node_pop();
+    parse_keyword_parenthese_expression("while");
+    struct node *exp_node = node_pop();
+    expect_sym(';');
+
+    make_do_while_node(body_node, exp_node);
+}
+
+void parse_while(struct history *history)
+{
+    parse_keyword_parenthese_expression("while");
+    struct node *exp_node = node_pop();
+    size_t variable_size = 0;
+    parse_body(&variable_size, history);
+    struct node *body_node = node_pop();
+    make_while_node(exp_node, body_node);
+}
+
+bool parse_for_loop_part(struct history *history)
+{
+    if (token_next_is_symbol(';'))
+    {
+        // We have nothing here i.e "for (;"
+        // Ignore the semicolon
+        token_next();
+        return false;
+    }
+
+    parse_expressionable_root(history);
+    expect_sym(';');
+    return true;
+}
+
+bool parse_for_loop_part_loop(struct history *history)
+{
+    if (token_next_is_symbol(')'))
+    {
+        return false;
+    }
+
+    parse_expressionable_root(history);
+    return true;
+}
+
+void parse_for_stmt(struct history *history)
+{
+    struct node *init_node = NULL;
+    struct node *cond_node = NULL;
+    struct node *loop_node = NULL;
+    struct node *body_node = NULL;
+
+    expect_keyword("for");
+    expect_op("(");
+    if (parse_for_loop_part(history))
+    {
+        init_node = node_pop();
+    }
+
+    if (parse_for_loop_part(history))
+    {
+        cond_node = node_pop();
+    }
+
+    if (parse_for_loop_part_loop(history))
+    {
+        loop_node = node_pop();
+    }
+
+    expect_sym(')');
+
+    size_t variable_size = 0;
+    parse_body(&variable_size, history);
+    body_node = node_pop();
+    make_for_node(init_node, cond_node, loop_node, body_node);
+}
+
 void parse_return(struct history *history)
 {
     expect_keyword("return");
@@ -1348,6 +1438,21 @@ void parse_keyword(struct history *history)
     else if (S_EQ(token->sval, "if"))
     {
         parse_if_stmt(history);
+        return;
+    }
+    else if (S_EQ(token->sval, "for"))
+    {
+        parse_for_stmt(history);
+        return;
+    }
+    else if (S_EQ(token->sval, "while"))
+    {
+        parse_while(history);
+        return;
+    }
+    else if (S_EQ(token->sval, "do"))
+    {
+        parse_do_while(history);
         return;
     }
 }
