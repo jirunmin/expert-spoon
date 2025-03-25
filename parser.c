@@ -51,7 +51,8 @@ enum
     HISTORY_FLAG_IS_GLOBAL_SCOPE = 0b00000100,
     HISTORY_FLAG_INSIDE_STRUCTURE = 0b00001000,
     HISTORY_FLAG_INSIDE_FUNCTION_BODY = 0b00010000,
-    HISTORY_FLAG_IN_SWITCH_STATEMENT = 0b00100000
+    HISTORY_FLAG_IN_SWITCH_STATEMENT = 0b00100000,
+    HISTORY_FLAG_PARENTHESES_IS_NOT_A_FUNCTION_CALL = 0b01000000
 };
 
 struct history_cases
@@ -114,6 +115,7 @@ void parse_expressionable(struct history *history);
 void parse_body(size_t *variable_size, struct history *history);
 void parse_keyword(struct history *history);
 void parse_label(struct history *history);
+void parse_for_tenary(struct history *history);
 struct vector *parse_function_arguments(struct history *history);
 
 void parser_scope_new()
@@ -403,6 +405,10 @@ int parse_exp(struct history *history)
     if (S_EQ(token_peek_next()->sval, "("))
     {
         parse_for_parentheses(history);
+    }
+    else if (S_EQ(token_peek_next()->sval, "?"))
+    {
+        parse_for_tenary(history);
     }
     else
     {
@@ -1530,6 +1536,20 @@ void parse_label(struct history *history)
     }
 
     make_label_node(label_name_node);
+}
+
+void parse_for_tenary(struct history *history)
+{
+    struct node *condition_node = node_pop();
+    expect_op("?");
+    parse_expressionable_root(history_down(history, HISTORY_FLAG_PARENTHESES_IS_NOT_A_FUNCTION_CALL));
+    struct node *true_result_node = node_pop();
+    expect_sym(':');
+    parse_expressionable_root(history_down(history, HISTORY_FLAG_PARENTHESES_IS_NOT_A_FUNCTION_CALL));
+    struct node *false_result_node = node_pop();
+    make_tenary_node(true_result_node, false_result_node);
+    struct node *tenary_node = node_pop();
+    make_exp_node(condition_node, tenary_node, "?");
 }
 
 void parse_keyword(struct history *history)

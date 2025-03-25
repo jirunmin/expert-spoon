@@ -337,6 +337,12 @@ struct node
             struct node *val;
         } var;
 
+        struct node_tenary
+        {
+            struct node *true_node;
+            struct node *false_node;
+        } tenary;
+
         struct varlist
         {
             // A list of struct node *variables.
@@ -430,7 +436,7 @@ struct node
             {
                 struct node *body_node;
             } else_stmt;
-            
+
             struct for_stmt
             {
                 struct node *init_node;
@@ -582,6 +588,7 @@ struct node *struct_node_for_name(struct compile_process *current_process, const
 bool node_is_expression_or_parentheses(struct node *node);
 bool node_is_value_type(struct node *node);
 
+void make_tenary_node(struct node *true_node, struct node *false_node);
 void make_case_node(struct node *exp_node);
 void make_goto_node(struct node *label_node);
 void make_label_node(struct node *name_node);
