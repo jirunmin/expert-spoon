@@ -1,11 +1,17 @@
 int main(int argc, char **argv)
 {
-    int i = 0;
-    do
-    {
-        int x = 0;
-    } while (1);
-    
-    return 0;
+   while(1)
+   {
+        continue;
+        goto abc;
+   }
+
+   abc:
+   switch(argc)
+   {
+    case 1:
+        break;
+   }
+   return 0;
 }
 

@@ -290,6 +290,12 @@ struct datatype
     } array;
 };
 
+struct parsed_switch_case
+{
+    // Index of the parsed case
+    int index;
+};
+
 struct node
 {
     int type;
@@ -444,7 +450,30 @@ struct node
                 struct node *exp_node;
                 struct node *body_node;
             } do_while_stmt;
+
+            struct switch_stmt
+            {
+                struct node *exp;
+                struct node *body;
+                struct vector *cases;
+                bool has_default_case;
+            } switch_stmt;
+
+            struct _case_stmt
+            {
+                struct node *exp;
+            } _case;
+
+            struct _goto_stmt
+            {
+                struct node *label;
+            } _goto;
         } stmt;
+
+        struct node_label
+        {
+            struct node *name;
+        } label;
     };
 
     union
@@ -553,6 +582,11 @@ struct node *struct_node_for_name(struct compile_process *current_process, const
 bool node_is_expression_or_parentheses(struct node *node);
 bool node_is_value_type(struct node *node);
 
+void make_case_node(struct node *exp_node);
+void make_goto_node(struct node *label_node);
+void make_label_node(struct node *name_node);
+void make_continue_node();
+void make_break_node();
 void make_exp_node(struct node *left_node, struct node *right_node, const char *op);
 void make_exp_parentheses_node(struct node *exp_node);
 void make_bracket_node(struct node *node);
@@ -565,6 +599,7 @@ void make_else_node(struct node *body_node);
 void make_for_node(struct node *init_node, struct node *cond_node, struct node *loop_node, struct node *body_node);
 void make_while_node(struct node *exp_node, struct node *body_node);
 void make_do_while_node(struct node *body_node, struct node *exp_node);
+void make_switch_node(struct node *exp_node, struct node *body_node, struct vector *cases, bool has_default_case);
 
 struct node *node_pop();
 struct node *node_peek();

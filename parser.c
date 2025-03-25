@@ -50,12 +50,25 @@ enum
     HISTORY_FLAG_IS_UPWARD_STACK = 0b00000010,
     HISTORY_FLAG_IS_GLOBAL_SCOPE = 0b00000100,
     HISTORY_FLAG_INSIDE_STRUCTURE = 0b00001000,
-    HISTORY_FLAG_INSIDE_FUNCTION_BODY = 0b00010000
+    HISTORY_FLAG_INSIDE_FUNCTION_BODY = 0b00010000,
+    HISTORY_FLAG_IN_SWITCH_STATEMENT = 0b00100000
+};
+
+struct history_cases
+{
+    // A vector of parsed_switch_case
+    struct vector *cases;
+    // Is there a default keyword in the switch statement body
+    bool has_default_case;
 };
 
 struct history
 {
     int flags;
+    struct parser_history_switch
+    {
+        struct history_cases case_data;
+    } _switch;
 };
 
 struct history *history_begin(int flags)
@@ -73,11 +86,34 @@ struct history *history_down(struct history *history, int flags)
     return new_history;
 }
 
+struct parser_history_switch parser_new_switch_statement(struct history *history)
+{
+    memset(&history->_switch, 0, sizeof(&history->_switch));
+    history->_switch.case_data.cases = vector_create(sizeof(struct parsed_switch_case));
+    history->flags |= HISTORY_FLAG_IN_SWITCH_STATEMENT;
+    return history->_switch;
+}
+
+void parser_end_switch_statement(struct parser_history_switch *switch_history)
+{
+    // do nothing
+}
+
+void parser_register_case(struct history *history, struct node *case_node)
+{
+    assert(history->flags & HISTORY_FLAG_IN_SWITCH_STATEMENT);
+    struct parsed_switch_case scase;
+#warning "TO IMPLEMENT, MUST BE SET TO THE CASE INDEX"
+    scase.index = 0;
+    vector_push(history->_switch.case_data.cases, &scase);
+}
+
 int parse_expressionable_single(struct history *history);
 void parse_expressionable_root(struct history *history);
 void parse_expressionable(struct history *history);
 void parse_body(size_t *variable_size, struct history *history);
 void parse_keyword(struct history *history);
+void parse_label(struct history *history);
 struct vector *parse_function_arguments(struct history *history);
 
 void parser_scope_new()
@@ -882,7 +918,15 @@ void parse_symbol()
         struct node *body_node = node_pop();
 
         node_push(body_node);
+        return;
     }
+    else if (token_next_is_symbol(':'))
+    {
+        parse_label(history_begin(0));
+        return;
+    }
+
+    compiler_error(current_process, "Invalid symbol was provided");
 }
 
 void parse_statement(struct history *history)
@@ -1321,6 +1365,36 @@ void parse_keyword_parenthese_expression(const char *keyword)
     expect_sym(')');
 }
 
+void parse_case(struct history *history)
+{
+    expect_keyword("case");
+    parse_expressionable_root(history);
+    struct node *case_exp_node = node_pop();
+    expect_sym(':');
+    make_case_node(case_exp_node);
+
+    if (case_exp_node->type != NODE_TYPE_NUMBER)
+    {
+        compiler_error(current_process, "We only support numbers in our subset of C at this time");
+    }
+
+    struct node *case_node = node_pop();
+    parser_register_case(history, case_node);
+}
+
+void parse_switch(struct history *history)
+{
+    struct parser_history_switch _switch = parser_new_switch_statement(history);
+    parse_keyword_parenthese_expression("switch");
+    struct node *switch_exp_node = node_pop();
+    size_t variable_size = 0;
+    parse_body(&variable_size, history);
+    struct node *body_node = node_pop();
+    // Make the switch node
+    make_switch_node(switch_exp_node, body_node, _switch.case_data.cases, _switch.case_data.has_default_case);
+    parser_end_switch_statement(&_switch);
+}
+
 void parse_do_while(struct history *history)
 {
     expect_keyword("do");
@@ -1421,6 +1495,43 @@ void parse_return(struct history *history)
     expect_sym(';');
 }
 
+void parse_continue(struct history *history)
+{
+    expect_keyword("continue");
+    expect_sym(';');
+    make_continue_node();
+}
+
+void parse_break(struct history *history)
+{
+    expect_keyword("break");
+    expect_sym(';');
+    make_break_node();
+}
+
+void parse_goto(struct history *history)
+{
+    expect_keyword("goto");
+    parse_identifier(history_begin(0));
+    expect_sym(';');
+
+    struct node *label_node = node_pop();
+    make_goto_node(label_node);
+}
+
+void parse_label(struct history *history)
+{
+    expect_sym(':');
+
+    struct node *label_name_node = node_pop();
+    if (label_name_node->type != NODE_TYPE_IDENTIFIER)
+    {
+        compiler_error(current_process, "Expecting an identifier for labels something else was provided");
+    }
+
+    make_label_node(label_name_node);
+}
+
 void parse_keyword(struct history *history)
 {
     struct token *token = token_peek_next();
@@ -1430,7 +1541,17 @@ void parse_keyword(struct history *history)
         return;
     }
 
-    if (S_EQ(token->sval, "return"))
+    if (S_EQ(token->sval, "break"))
+    {
+        parse_break(history);
+        return;
+    }
+    else if (S_EQ(token->sval, "continue"))
+    {
+        parse_continue(history);
+        return;
+    }
+    else if (S_EQ(token->sval, "return"))
     {
         parse_return(history);
         return;
@@ -1455,6 +1576,23 @@ void parse_keyword(struct history *history)
         parse_do_while(history);
         return;
     }
+    else if (S_EQ(token->sval, "switch"))
+    {
+        parse_switch(history);
+        return;
+    }
+    else if (S_EQ(token->sval, "goto"))
+    {
+        parse_goto(history);
+        return;
+    }
+    else if (S_EQ(token->sval, "case"))
+    {
+        parse_case(history);
+        return;
+    }
+
+    compiler_error(current_process, "Invalid keyword");
 }
 
 int parse_expressionable_single(struct history *history)

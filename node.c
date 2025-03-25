@@ -60,6 +60,34 @@ struct node *node_peek_expressionable_or_null()
     return node_is_expressionable(last_node) ? last_node : NULL;
 }
 
+void make_case_node(struct node *exp_node)
+{
+    node_create(&(struct node){.type = NODE_TYPE_STATEMENT_CASE,
+                               .stmt._case.exp = exp_node});
+}
+
+void make_goto_node(struct node *label_node)
+{
+    node_create(&(struct node){.type = NODE_TYPE_STATEMENT_GOTO,
+                               .stmt._goto.label = label_node});
+}
+
+void make_label_node(struct node *name_node)
+{
+    node_create(&(struct node){.type = NODE_TYPE_LABEL,
+                               .label.name = name_node});
+}
+
+void make_continue_node()
+{
+    node_create(&(struct node){.type = NODE_TYPE_STATEMENT_CONTINUE});
+}
+
+void make_break_node()
+{
+    node_create(&(struct node){.type = NODE_TYPE_STATEMENT_BREAK});
+}
+
 void make_exp_node(struct node *left_node, struct node *right_node, const char *op)
 {
     assert(left_node);
@@ -113,6 +141,15 @@ void make_function_node(struct datatype *ret_type, const char *name, struct vect
                                .func.rtype = *ret_type,
                                .func.args.stack_addition = DATA_SIZE_DDWORD});
 #warning "Don't forget to build the frame elements"
+}
+
+void make_switch_node(struct node *exp_node, struct node *body_node, struct vector *cases, bool has_default_case)
+{
+    node_create(&(struct node){.type = NODE_TYPE_STATEMENT_SWITCH,
+                               .stmt.switch_stmt.exp = exp_node,
+                               .stmt.switch_stmt.body = body_node,
+                               .stmt.switch_stmt.cases = cases,
+                               .stmt.switch_stmt.has_default_case = has_default_case});
 }
 
 void make_do_while_node(struct node *body_node, struct node *exp_node)
