@@ -1,10 +1,16 @@
-union abc
+struct book
 {
-   int x;
-} a;
+   char name[30];
+};
 
+int test(char *fmt, ...)
+{
+   return 1;
+}
+
+struct book book;
 int main()
 {
-   int x = 50;
-   return 0;
+   struct book *books;
+   return test(56, books[0].name, 1000);
 }
