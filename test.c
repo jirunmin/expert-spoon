@@ -5,7 +5,7 @@ struct book
 
 int test(char *fmt, ...)
 {
-   return 1;
+   return 11;
 }
 
 struct book book;
