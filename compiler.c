@@ -56,6 +56,11 @@ int compile_file(const char *filename, const char *out_filename, int flags)
     }
 
     // Perform code generation...
+    if (codegen(process) != CODEGEN_ALL_OK)
+    {
+        return COMPILER_FAILED_WITH_ERRORS;
+    }
+    
 
     return COMPILER_FILE_COMPILED_OK;
 }
