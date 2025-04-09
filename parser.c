@@ -675,7 +675,7 @@ void parser_datatype_init_type_and_size_for_primitive(struct token *datatype_tok
     else if (S_EQ(datatype_token->sval, "double"))
     {
         datatype_out->type = DATA_TYPE_DOUBLE;
-        datatype_out->size = DATA_SIZE_DWORD;
+        datatype_out->size = DATA_SIZE_DDWORD;
     }
     else
     {
