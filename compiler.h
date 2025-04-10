@@ -183,8 +183,21 @@ struct codegen_exit_point
     int id;
 };
 
+struct string_table_element
+{
+    // This is the string that the element is related to.
+    const char *str;
+
+    // This is the assembly label that point to the memory
+    // where the string can be found.
+    const char label[50];
+};
+
 struct code_generator
 {
+    // A vector of struct string_table_element*
+    struct vector *string_table;
+
     // vector of struct codegen_entry_point*
     struct vector *entry_points;
     // vector of struct codegen_exit_point*
