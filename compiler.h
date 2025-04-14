@@ -654,11 +654,11 @@ struct resolver_scope;
 struct resolver_entity;
 
 typedef void *(*RESOLVER_NEW_ARRAY_BRACKET_ENTITY)(struct resolver_result *result, struct node *array_entity_node);
-typedef void(*RESOLVER_DELETE_SCOPE)(struct resolver_scope *scope);
-typedef void(*RESOLVER_DELETE_ENTITY)(struct resolver_entity *entity);
+typedef void (*RESOLVER_DELETE_SCOPE)(struct resolver_scope *scope);
+typedef void (*RESOLVER_DELETE_ENTITY)(struct resolver_entity *entity);
 typedef struct resolver_entity *(*RESOLVER_MERGE_ENTITIES)(struct resolver_process *process, struct resolver_result *result, struct resolver_entity *left_entity, struct resolver_entity *right_entity);
 typedef void *(*RESOLVER_MAKE_PRIVATE)(struct resolver_entity *entity, struct node *node, int offset, struct resolver_scope *scope);
-typedef void(*RESOLVER_SET_RESULT_BASE)(struct resolver_result *result, struct resolver_entity *base_entity);
+typedef void (*RESOLVER_SET_RESULT_BASE)(struct resolver_result *result, struct resolver_entity *base_entity);
 struct resolver_callbacks
 {
     RESOLVER_NEW_ARRAY_BRACKET_ENTITY new_array_entity;
@@ -678,7 +678,7 @@ struct resolver_process
         struct resolver_scope *current;
     } scope;
 
-    struct compile_process *process;
+    struct compile_process *compiler;
     struct resolver_callbacks callbacks;
 };
 
@@ -774,7 +774,7 @@ struct resolver_entity
                 int multiplier;
             } array_runtime;
         } var_data;
-        
+
         struct resolver_array
         {
             struct datatype dtype;
@@ -810,7 +810,7 @@ struct resolver_entity
             int depth;
         } indirection;
     };
-    
+
     struct entity_last_resolve
     {
         struct node *referencing_node;
