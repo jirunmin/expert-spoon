@@ -883,6 +883,12 @@ enum
 
 enum
 {
+    STRUCT_ACCESS_BACKWARDS = 0b00000001,
+    STRUCT_STOP_AT_POINTER_ACCESS = 0b00000010
+};
+
+enum
+{
     // The flag is set for native functions.
     FUNCTION_NODE_FLAG_IS_NATIVE = 0b00000001
 };
@@ -967,6 +973,7 @@ struct node *node_peek_expressionable_or_null();
 bool node_is_expressionable(struct node *node);
 bool node_is_struct_or_union_variable(struct node *node);
 bool node_is_expression(struct node *node, const char *op);
+bool node_is_struct_or_union(struct node *node);
 bool is_array_node(struct node *node);
 bool is_node_assignment(struct node *node);
 
@@ -989,6 +996,9 @@ bool variable_node_is_primitive(struct node *node);
 
 int array_multiplier(struct datatype *dtype, int index, int index_value);
 int array_offset(struct datatype *dtype, int index, int index_value);
+int struct_offset(struct compile_process *compile_proc, const char *struct_name, const char *var_name, struct node **var_node_out, int last_pos, int flags);
+struct node *variable_struct_or_union_largest_variable_node(struct node *var_node);
+struct node *body_largest_variable_node(struct node *body_node);
 
 int padding(int val, int to);
 int align_value(int val, int to);
