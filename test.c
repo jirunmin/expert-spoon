@@ -1,3 +1,2 @@
-const char *hello = "hello";
+const char *str = "Hello";
 int x = 2;
-int y;
