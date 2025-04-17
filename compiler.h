@@ -621,7 +621,7 @@ enum
     RESOLVER_ENTITY_FLAG_IS_STACK = 0b00000001,
     RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTITY = 0b00000010,
     RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY = 0b00000100,
-    RESOLVER_ENTITY_FLAG_NO_INDIRECTION = 0b00001000,
+    RESOLVER_ENTITY_FLAG_DO_INDIRECTION = 0b00001000,
     RESOLVER_ENTITY_FLAG_JUST_USE_STACK = 0b00010000,
     RESOLVER_ENTITY_FLAG_IS_POINTER_ARRAY_ENTITY = 0b00100000,
     RESOLVER_ENTITY_FLAG_WAS_CASTED = 0b01000000,
@@ -976,6 +976,8 @@ bool is_array_node(struct node *node);
 bool is_parentheses_operator(const char *op);
 bool is_parentheses_node(struct node *node);
 bool is_access_node_with_op(struct node *node, const char *op);
+bool is_argument_operator(const char *op);
+bool is_argument_node(struct node *node);
 
 struct node *node_peek_expressionable_or_null();
 bool node_is_expressionable(struct node *node);
@@ -983,6 +985,7 @@ bool node_is_struct_or_union_variable(struct node *node);
 bool node_is_expression(struct node *node, const char *op);
 bool node_is_struct_or_union(struct node *node);
 bool is_node_assignment(struct node *node);
+bool node_valid(struct node *node);
 
 struct array_brackets *array_brackets_new();
 void array_brackets_free(struct array_brackets *brackets);
