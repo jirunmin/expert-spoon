@@ -969,12 +969,19 @@ struct node *node_peek_or_null();
 void node_push(struct node *node);
 void node_set_vector(struct vector *vec, struct vector *root_vec);
 
+bool is_access_operator(const char *op);
+bool is_access_node(struct node *node);
+bool is_array_operator(const char *op);
+bool is_array_node(struct node *node);
+bool is_parentheses_operator(const char *op);
+bool is_parentheses_node(struct node *node);
+bool is_access_node_with_op(struct node *node, const char *op);
+
 struct node *node_peek_expressionable_or_null();
 bool node_is_expressionable(struct node *node);
 bool node_is_struct_or_union_variable(struct node *node);
 bool node_is_expression(struct node *node, const char *op);
 bool node_is_struct_or_union(struct node *node);
-bool is_array_node(struct node *node);
 bool is_node_assignment(struct node *node);
 
 struct array_brackets *array_brackets_new();
