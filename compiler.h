@@ -392,6 +392,23 @@ void stackframe_sub(struct node *func_node, int type, const char *name, size_t a
 void stackframe_add(struct node *func_node, int type, const char *name, size_t amount);
 void stackframe_assert_empty(struct node *func_node);
 
+struct node;
+struct unary
+{
+    // "*" for pointer access.. **** even for multiple pointer access only the first operator is here
+    const char *op;
+    struct node *operand;
+    union
+    {
+        struct indirection
+        {
+            // The pointer depth
+            int depth;
+        } indirection;
+    };
+    
+};
+
 struct node
 {
     int type;
@@ -604,6 +621,8 @@ struct node
             struct datatype dtype;
             struct node *operand;
         } cast;
+
+        struct unary unary;
     };
 
     union
@@ -962,6 +981,7 @@ void make_for_node(struct node *init_node, struct node *cond_node, struct node *
 void make_while_node(struct node *exp_node, struct node *body_node);
 void make_do_while_node(struct node *body_node, struct node *exp_node);
 void make_switch_node(struct node *exp_node, struct node *body_node, struct vector *cases, bool has_default_case);
+void make_unary_node(const char *op, struct node *operand_node);
 
 struct node *node_pop();
 struct node *node_peek();
@@ -978,6 +998,8 @@ bool is_parentheses_node(struct node *node);
 bool is_access_node_with_op(struct node *node, const char *op);
 bool is_argument_operator(const char *op);
 bool is_argument_node(struct node *node);
+bool is_unary_opeartor(const char *op);
+bool op_is_indirection(const char *op);
 void datatype_decrement_pointer(struct datatype *dtype);
 
 struct node *node_peek_expressionable_or_null();
