@@ -1,2 +1,8 @@
 const char *str = "Hello";
-int x = 2;
+
+int test()
+{
+    int a;
+    int *b = &a;
+    *b = 100;
+}
