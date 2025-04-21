@@ -406,7 +406,6 @@ struct unary
             int depth;
         } indirection;
     };
-    
 };
 
 struct node
@@ -951,6 +950,7 @@ size_t datatype_element_size(struct datatype *dtype);
 size_t datatype_size_no_ptr(struct datatype *dtype);
 size_t datatype_size(struct datatype *dtype);
 bool datatype_is_primitive(struct datatype *dtype);
+bool datatype_is_struct_or_union_non_pointer(struct datatype *dtype);
 
 struct node *node_create(struct node *_node);
 struct node *node_from_sym(struct symbol *sym);
